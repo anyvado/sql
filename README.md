@@ -1,7 +1,7 @@
 # Anyvado SQL
 
 Anyvado SQL is a part of [Anyvado](https://anyvado.com) database structure. 
-To learn more about Anyvado and its SQL features go to [Anyvado WIKI](http://wiki.anyvado.com/doku.php?id=core:ds:dbs:mssql:start)
+More information about Anyvado and SQL features @ [Anyvado WIKI](http://wiki.anyvado.com/doku.php?id=core:ds:dbs:mssql:start)
 
 ## JSON SQL functions
 We have created below functions for SQL to support the use of  [JSON paths](https://goessner.net/articles/JsonPath/).
