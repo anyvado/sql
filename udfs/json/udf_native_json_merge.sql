@@ -1,4 +1,6 @@
 SET ANSI_NULLS ON
+GO
+
 SET QUOTED_IDENTIFIER ON
 GO
 
@@ -134,7 +136,8 @@ BEGIN
                         )
             )	AS trg
 
-    RETURN 	@target
-   
+    RETURN 	@target   
     
 END
+GO
+
