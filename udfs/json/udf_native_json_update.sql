@@ -1,14 +1,13 @@
 SET ANSI_NULLS ON
-GO
-
 SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE FUNCTION [dbo].[udf_native_json_update] ( 
-    @target NVARCHAR(MAX),	-- JSON Target 	
-	@path NVARCHAR(MAX),    -- JSON Path	(path to token)
-    @source NVARCHAR(MAX),	-- JSON Source 	(value to set)
-    @options NVARCHAR(MAX)	-- JSON Options
+    @target NVARCHAR(MAX),		-- JSON Target
+	@path NVARCHAR(MAX),    	-- JSON Path	(path to token)
+    @source NVARCHAR(MAX),		-- JSON Source 	(value to set)
+    @sourceType NVARCHAR(20),	-- JSON Source type	(set if udf_native_json_merge is used)
+    @options NVARCHAR(MAX)		-- JSON Options
     
 )
 RETURNS NVARCHAR(MAX)
@@ -33,11 +32,14 @@ BEGIN
   			@ValueInt BIGINT,
             @ValueFloat FLOAT
             
-	/* Dont try to cast into numerics if size of string if longer that 200 */
-	IF LEN(@source)<50
-	SELECT	@ValueBool = TRY_CAST(@source AS BIT),
-  			@ValueInt = TRY_CAST(@source AS BIGINT),
-            @ValueFloat = TRY_CAST(@source AS FLOAT)
+	/* 	Only try to cast into numerics if size of string if less than 50 chars
+    	and if @sourceType is set to the correct object type        
+    */
+	IF LEN(@source)<50 OR @sourceType IS NOT NULL
+      SELECT  @ValueBool 	= IIF(ISNULL(@sourceType,'Boolean')<>'Boolean',NULL,TRY_CAST(@source AS BIT)),
+              @ValueInt 	= IIF(ISNULL(@sourceType,'Integer')<>'Integer',NULL,TRY_CAST(@source AS BIGINT)),
+              @ValueFloat 	= IIF(ISNULL(@sourceType,'Float')<>'Float',NULL,TRY_CAST(@source AS FLOAT))
+    	
 
 	/* 	
     	Hack to avoid deleting keys with NULL values. (default in MS SQL 2017) 
@@ -89,5 +91,3 @@ BEGIN
             )
 
 END
-GO
-

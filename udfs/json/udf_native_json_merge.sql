@@ -1,6 +1,4 @@
 SET ANSI_NULLS ON
-GO
-
 SET QUOTED_IDENTIFIER ON
 GO
 
@@ -63,13 +61,14 @@ BEGIN
 												trg.PropertyType <> src.PropertyType
 										THEN	CASE
                                         			WHEN @rootType = 'Array'
-                                                    THEN dbo.udf_native_json_update(@target, 'append $', src.PropertyValue, @options)
-                                                    ELSE dbo.udf_native_json_update(@target, src.PropertyPathSafe, src.PropertyValue, @options)
+                                                    THEN dbo.udf_native_json_update(@target, 'append $', src.PropertyValue, src.PropertyType, @options)
+                                                    ELSE dbo.udf_native_json_update(@target, src.PropertyPathSafe, src.PropertyValue, src.PropertyType, @options)
                                         		END
 										ELSE	dbo.udf_native_json_update
 												(	@target, src.PropertyPathSafe, 
 													dbo.udf_native_json_merge
 													(	trg.PropertyValue, src.PropertyValue, @options ),
+                                                    src.PropertyType,
 													@options
 												)
 									END
@@ -78,21 +77,21 @@ BEGIN
 										THEN	CASE 
 													-- Concatenate arrays OR Replace all array items 
 													WHEN	@updateArrOpt IN (0,2) 
-													THEN	dbo.udf_native_json_update(@target, 'append $', src.PropertyValue, @options)
+													THEN	dbo.udf_native_json_update(@target, 'append $', src.PropertyValue, src.PropertyType, @options)
 													-- Union arrays, skipping items that already exist.
 													WHEN	@updateArrOpt = 1 AND (trg.PropertyType IS NULL OR trg.PropertyValue <> src.PropertyValue)
-													THEN	dbo.udf_native_json_update(@target, 'append $', src.PropertyValue, @options)
+													THEN	dbo.udf_native_json_update(@target, 'append $', src.PropertyValue, src.PropertyType, @options)
 													-- Merge array items together, matched by index.
 													WHEN	@updateArrOpt = 3 AND trg.PropertyType IS NULL
-													THEN	dbo.udf_native_json_update(@target, 'append $', src.PropertyValue, @options)
+													THEN	dbo.udf_native_json_update(@target, 'append $', src.PropertyValue, src.PropertyType, @options)
 													WHEN	@updateArrOpt = 3 AND trg.PropertyType IS NOT NULL
-													THEN	dbo.udf_native_json_update(@target, src.PropertyPathSafe, src.PropertyValue, @options)
+													THEN	dbo.udf_native_json_update(@target, src.PropertyPathSafe, src.PropertyValue, src.PropertyType, @options)
 													ELSE	@target
 												END
 										ELSE	CASE
 													WHEN	src.PropertyType = 'Null' AND @updateNullOpt = 2
 													THEN	@target
-													ELSE	dbo.udf_native_json_update(@target, src.PropertyPathSafe, src.PropertyValue, @options)
+													ELSE	dbo.udf_native_json_update(@target, src.PropertyPathSafe, src.PropertyValue, src.PropertyType, @options)
 												END
 									END		
 						END	
@@ -139,5 +138,3 @@ BEGIN
    
     
 END
-GO
-
